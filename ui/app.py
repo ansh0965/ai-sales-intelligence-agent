@@ -10,16 +10,18 @@
 # final message) as they happen, so the "Agent Activity" panel updates live
 # instead of only showing a result after the whole pipeline finishes.
 #
-# UI NOTE: in-session history and the downloadable report are kept in a
-# gr.State dict of {company_name: raw_result} — separate from ADK's own
-# session state (which only remembers company *names*, not full results).
-# This lets a user revisit a previous company's report instantly without
-# re-running the pipeline.
+# UI NOTE: history and the downloadable report are kept in a gr.State dict
+# of {company_name: raw_result} — separate from ADK's own session state
+# (which only remembers company *names*, not full results). The dict is
+# mirrored to ui/history_cache.json after every successful run and reloaded
+# on every page load, so previously researched companies survive app
+# restarts without re-running the pipeline (or re-spending API quota).
 
 import os
 import re
 import sys
 import html
+import json
 import tempfile
 import gradio as gr
 from dotenv import load_dotenv
@@ -297,6 +299,41 @@ def history_choices(history: dict) -> list:
     return list(reversed(history.keys()))
 
 
+# ---------------------------------------------------------------------------
+# History persistence — survives app restarts and page refreshes.
+# ---------------------------------------------------------------------------
+HISTORY_CACHE_PATH = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "history_cache.json"
+)
+
+
+def _load_history_cache() -> dict:
+    try:
+        with open(HISTORY_CACHE_PATH, encoding="utf-8") as f:
+            data = json.load(f)
+        return data if isinstance(data, dict) else {}
+    except (OSError, ValueError):
+        return {}
+
+
+def _save_history_cache(history: dict) -> None:
+    # A disk hiccup must never kill a pipeline run — warn and move on.
+    try:
+        with open(HISTORY_CACHE_PATH, "w", encoding="utf-8") as f:
+            json.dump(history, f, ensure_ascii=False, indent=2)
+    except (OSError, TypeError) as e:
+        print(f"[warn] Could not save history cache: {e}", file=sys.stderr)
+
+
+def init_history():
+    """Runs on every page load: rehydrates the history dict (and the
+    dropdown choices) from the on-disk cache. value=None is explicit so
+    Gradio doesn't auto-select the first choice — that would fire the
+    dropdown's change event and load a report onto a fresh page."""
+    history = _load_history_cache()
+    return history, gr.update(choices=history_choices(history), value=None)
+
+
 # 10 no-op updates — appended after the streamed activity log to fill the
 # remaining outputs of the 11-component `run_outputs` list.
 NO_CHANGE_10 = tuple(gr.update() for _ in range(10))
@@ -354,7 +391,7 @@ async def run_pipeline_ui(company_name: str, history: dict):
         format_lead_score_html(None),
         "⏳ Waiting for email draft to complete...",
         "",
-        status_banner(f"Running pipeline for <b>{esc(company_name)}</b>…", "running"),
+        status_banner(f"Running pipeline for <b style='color:inherit;'>{esc(company_name)}</b>…", "running"),
         gr.update(interactive=False),
         gr.update(interactive=False),
         gr.update(),
@@ -389,7 +426,7 @@ async def run_pipeline_ui(company_name: str, history: dict):
             )
         else:
             status = status_banner(
-                f"Pipeline complete for <b>{esc(company_name)}</b> — Lead Score {esc(str(score))}/100 "
+                f"Pipeline complete for <b style='color:inherit;'>{esc(company_name)}</b> — Lead Score {esc(str(score))}/100 "
                 f"(Grade {esc(str(grade))}) &middot; CRM {'logged ✅' if crm_logged else 'skipped (no Sheet ID)'}",
                 "success",
             )
@@ -399,6 +436,7 @@ async def run_pipeline_ui(company_name: str, history: dict):
         history = dict(history)
         history.pop(company_name, None)
         history[company_name] = result
+        _save_history_cache(history)
 
         yield (
             activity_log,
@@ -435,7 +473,7 @@ def load_from_history(company: str, history: dict):
         return gr.update(), gr.update(), gr.update(), gr.update(), gr.update(), gr.update(), gr.update()
 
     result = history[company]
-    status = status_banner(f"📂 Loaded cached report for <b>{esc(company)}</b> from this session's history.", "history")
+    status = status_banner(f"📂 Loaded cached report for <b style='color:inherit;'>{esc(company)}</b> — no re-run needed.", "history")
     return (
         format_research(result.get("research")),
         format_lead_score_html(result.get("lead_score")),
@@ -496,7 +534,7 @@ with gr.Blocks(title="AI Sales Intelligence Agent") as demo:
     # History + export row
     with gr.Row():
         history_dropdown = gr.Dropdown(
-            label="📜 Previously researched this session (select to reload instantly)",
+            label="📜 Previously researched (select to reload instantly)",
             choices=[],
             value=None,
             interactive=True,
@@ -611,6 +649,12 @@ with gr.Blocks(title="AI Sales Intelligence Agent") as demo:
         fn=export_report,
         inputs=[current_company_state, history_state],
         outputs=[download_button],
+    )
+
+    # Rehydrate history from disk on every page load / refresh.
+    demo.load(
+        fn=init_history,
+        outputs=[history_state, history_dropdown],
     )
 
     clear_button.click(

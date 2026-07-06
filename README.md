@@ -11,7 +11,7 @@ Built for the **Google Kaggle Capstone — Vibecoding Agents (Agents for Busines
 ![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
-> 🎬 **Demo video:** *(YouTube link here)* · 🚀 **Live demo:** *(Hugging Face Space link here)*
+> 🎬 **Demo video:** [youtu.be/8DLDiZ7zeb0](https://youtu.be/8DLDiZ7zeb0) · 🚀 **Live demo:** [Hugging Face Space](https://huggingface.co/spaces/anshpandeyy9140/ai-sales-intelligence-agent)
 
 ---
 

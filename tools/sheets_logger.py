@@ -176,40 +176,50 @@ def log_sales_intelligence(pipeline_result: dict) -> bool:
         print("   [skip] GOOGLE_SHEETS_ID not set in .env - skipping log", file=sys.stderr)
         return False
     
-    # Define headers for sales intelligence sheet
+    # Headers must match the existing "Sales Intelligence" worksheet's first
+    # row exactly — rows are appended positionally, so a shorter/reordered
+    # list silently lands values under the wrong columns.
     headers = [
         "Timestamp",
-        "Company",
+        "Company Name",
         "Industry",
+        "Description",
         "Employee Count",
+        "Revenue",
         "Funding",
         "Lead Score",
         "Lead Grade",
-        "Action",
+        "Recommended Action",
         "Top Signals",
+        "Pain Points",
         "Email Subject",
-        "Reply Rate",
+        "Email Body",
+        "Estimated Reply Rate",
         "Errors"
     ]
-    
+
     # Extract and flatten data
     research = pipeline_result.get("research") or {}
     score = pipeline_result.get("lead_score") or {}
     email = pipeline_result.get("email_draft") or {}
     errors = pipeline_result.get("errors") or []
-    
+
     data = {
         "Timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-        "Company": research.get("company_name", pipeline_result.get("company", "")),
+        "Company Name": research.get("company_name", pipeline_result.get("company", "")),
         "Industry": research.get("industry", ""),
+        "Description": research.get("description", ""),
         "Employee Count": research.get("employee_count", ""),
+        "Revenue": research.get("revenue", ""),
         "Funding": research.get("funding", ""),
         "Lead Score": score.get("score", ""),
         "Lead Grade": score.get("grade", ""),
-        "Action": score.get("recommended_action", ""),
+        "Recommended Action": score.get("recommended_action", ""),
         "Top Signals": score.get("top_signals", []),
+        "Pain Points": research.get("pain_points", []),
         "Email Subject": email.get("subject", ""),
-        "Reply Rate": email.get("estimated_reply_rate", ""),
+        "Email Body": email.get("body", ""),
+        "Estimated Reply Rate": email.get("estimated_reply_rate", ""),
         "Errors": errors
     }
     

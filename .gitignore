@@ -6,6 +6,9 @@
 credentials.json
 *credentials*.json
 
+# Local research-result cache (real CRM data, machine-specific)
+ui/history_cache.json
+
 
 .history        
 # Python
