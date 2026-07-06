@@ -1,0 +1,9 @@
+google-adk==2.3.0
+google-genai
+mcp>=1.0
+python-dotenv
+gradio>=6.0
+requests
+gspread
+google-auth
+google-auth-oauthlib
