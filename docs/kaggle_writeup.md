@@ -1,10 +1,6 @@
 # AI Sales Intelligence Agent — Kaggle Capstone Writeup
 
-> **Draft for the Kaggle submission (~2,500 words). Before submitting: fill in
-> the three placeholder links, personalize the Antigravity paragraph with what
-> you actually did, and read it once end-to-end so it sounds like you.**
-
-**GitHub:** *(link)* · **Live demo:** *(Hugging Face Space link)* · **Video:** *(YouTube link)*
+**GitHub:** [github.com/ansh0965/ai-sales-intelligence-agent](https://github.com/ansh0965/ai-sales-intelligence-agent) · **Live demo:** [Hugging Face Space](https://huggingface.co/spaces/anshpandeyy9140/ai-sales-intelligence-agent) · **Video:** [youtu.be/8DLDiZ7zeb0](https://youtu.be/8DLDiZ7zeb0)
 
 ---
 
@@ -219,12 +215,12 @@ staring at a spinner. It matters for trust (users see *why* the score is
 what it is), and it makes the multi-agent architecture legible to a
 non-technical audience in a way no diagram can. Results land in three tabs —
 research report, a visual score card with per-criterion bars, and the email
-with a copy-ready text box — plus a session history dropdown backed by the
-agent's own memory, and a downloadable Markdown report.
+with a copy-ready text box — plus a history dropdown backed by a persistent
+on-disk result cache, so previously researched companies reload instantly
+even across restarts, and a downloadable Markdown report.
 
 ## Development with Antigravity
 
-*(Personalize this paragraph with what you actually did before submitting.)*
 The project was developed and tested in Antigravity, Google's agentic IDE.
 Its agent was most useful at the debugging edges of this project — tracing
 ADK's event stream to get the streaming UI right, and exercising the MCP
@@ -264,6 +260,3 @@ mechanism none of them has to think about, throttled globally, validated at
 every boundary, and exposed to the outside world through a protocol that
 makes the whole system a tool in someone else's toolbox. That composition is
 what turns "an LLM demo" into "a system" — and it is what I would build on.
-
----
-*Word count: ~2,450. Links to fill: GitHub repo, HF Space, YouTube video.*
