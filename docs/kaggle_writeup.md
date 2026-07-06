@@ -221,12 +221,15 @@ even across restarts, and a downloadable Markdown report.
 
 ## Development with Antigravity
 
-The project was developed and tested in Antigravity, Google's agentic IDE.
-Its agent was most useful at the debugging edges of this project — tracing
-ADK's event stream to get the streaming UI right, and exercising the MCP
-server the way an external client would — while the built-in browser preview
-closed the loop on UI iterations without leaving the editor. The video
-includes a segment of this workflow.
+The project was built in Antigravity, Google's agentic IDE, from the first
+step to the last: standing up the Google Cloud side, getting the ADK
+environment configured, and then the long middle of any real project —
+generating first drafts of code and debugging what came back. That mix of
+creating and diagnosing is where its agent earned a permanent place in the
+loop. The video's Antigravity segment shows the workflow live: I ask the
+agent to explain the project, and it walks the actual codebase to lay out
+the orchestrator's flow — a good test of whether the architecture is as
+legible to a fresh agent as it is to its author.
 
 ## Results and honest limitations
 
